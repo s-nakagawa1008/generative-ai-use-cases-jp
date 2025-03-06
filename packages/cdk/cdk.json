@@ -49,14 +49,20 @@
       "amazon.nova-canvas-v1:0"
     ],
     "endpointNames": [],
-    "agentEnabled": false,
-    "searchAgentEnabled": false,
+    "agentEnabled": true,
+    "searchAgentEnabled":true,
     "searchApiKey": "",
-    "agents": [],
+    "agents": [
+      {
+        "displayName": "date-agent-nakagawa",
+        "agentId": "G7QMB2R0L1",
+        "aliasId": "0DGJVSNF5F",
+        "region": "ap-northeast-1"
+      }
+    ],
     "inlineAgents": false,
     "flows": [],
-    "allowedIpV4AddressRanges": null,
-    "allowedIpV6AddressRanges": null,
+    "allowedIpV4AddressRanges": ["153.246.149.41/32"],
     "allowedCountryCodes": null,
     "hostName": null,
     "domainName": null,
