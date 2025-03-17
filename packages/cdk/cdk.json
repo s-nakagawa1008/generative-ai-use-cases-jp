@@ -54,9 +54,9 @@
     "searchApiKey": "",
     "agents": [
       {
-        "displayName": "date-agent-nakagawa",
-        "agentId": "G7QMB2R0L1",
-        "aliasId": "0DGJVSNF5F"
+        "displayName": "genu-source",
+        "agentId": "DBIYMNHGGK",
+        "aliasId": "JNXEMOJVVM"
       }
     ],
     "inlineAgents": false,
