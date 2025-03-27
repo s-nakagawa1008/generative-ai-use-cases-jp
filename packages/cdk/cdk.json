@@ -29,6 +29,7 @@
     "ragKnowledgeBaseStandbyReplicas": false,
     "ragKnowledgeBaseAdvancedParsing": false,
     "ragKnowledgeBaseAdvancedParsingModelId": "anthropic.claude-3-sonnet-20240229-v1:0",
+    "ragKnowledgeBaseBinaryVector": false,
     "embeddingModelId": "amazon.titan-embed-text-v2:0",
     "rerankingModelId": null,
     "queryDecompositionEnabled": false,
@@ -46,6 +47,9 @@
     ],
     "imageGenerationModelIds": [
       "amazon.nova-canvas-v1:0"
+    ],
+    "videoGenerationModelIds": [
+      "amazon.nova-reel-v1:0"
     ],
     "endpointNames": [],
     "agentEnabled": true,
