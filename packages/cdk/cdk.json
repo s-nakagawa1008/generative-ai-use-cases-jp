@@ -57,9 +57,9 @@
     "searchApiKey": "",
     "agents": [
       {
-        "displayName": "genu-source-agent",
+        "displayName": "source-agent",
         "agentId": "DBIYMNHGGK",
-        "aliasId": "ILYXEAKPH3"
+        "aliasId": "90BS5SHAMM"
       }
     ],
     "inlineAgents": false,
