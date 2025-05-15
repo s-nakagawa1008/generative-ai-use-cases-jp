@@ -100,7 +100,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   // GenU Stack
   const generativeAiUseCasesStack = new GenerativeAiUseCasesStack(
     app,
-    `GenerativeAiUseCasesStack${params.env}`,
+    `GenerativeAiUseCasesStack-nakagawa1008${params.env}`,
     {
       env: {
         account: params.account,
