@@ -60,7 +60,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
     }
   }
   const agentStack = params.agentEnabled
-    ? new AgentStack(app, `WebSearchAgentStack${params.env}`, {
+    ? new AgentStack(app, `WebSearchAgentStack-nakagawa1008${params.env}`, {
         env: {
           account: params.account,
           region: params.modelRegion,
@@ -72,7 +72,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
 
   // Guardrail
   const guardrail = params.guardrailEnabled
-    ? new GuardrailStack(app, `GuardrailStack${params.env}`, {
+    ? new GuardrailStack(app, `GuardrailStack-nakagawa1008${params.env}`, {
         env: {
           account: params.account,
           region: params.modelRegion,
@@ -91,7 +91,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   for (const region of videoModelRegions) {
     const videoTmpBucketStack = new VideoTmpBucketStack(
       app,
-      `VideoTmpBucketStack${params.env}${region}`,
+      `VideoTmpBucketStack${params.env}-nakagawa1008${region}`,
       {
         env: {
           account: params.account,
@@ -143,7 +143,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   const dashboardStack = params.dashboard
     ? new DashboardStack(
         app,
-        `GenerativeAiUseCasesDashboardStack${params.env}`,
+        `GenerativeAiUseCasesDashboardStack-nakagawa1008${params.env}`,
         {
           env: {
             account: params.account,
