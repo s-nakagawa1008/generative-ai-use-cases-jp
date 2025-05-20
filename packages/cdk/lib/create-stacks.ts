@@ -41,7 +41,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   // RAG Knowledge Base
   const ragKnowledgeBaseStack =
     params.ragKnowledgeBaseEnabled && !params.ragKnowledgeBaseId
-      ? new RagKnowledgeBaseStack(app, `RagKnowledgeBaseStack${params.env}`, {
+      ? new RagKnowledgeBaseStack(app, `RagKnowledgeBaseStack-nakagawa1008${params.env}`, {
           env: {
             account: params.account,
             region: params.modelRegion,
