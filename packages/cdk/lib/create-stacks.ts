@@ -21,8 +21,8 @@ class DeletionPolicySetter implements cdk.IAspect {
 
 export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   // CloudFront WAF
-  // IP アドレス範囲(v4もしくはv6のいずれか)か地理的制限が定義されている場合のみ、CloudFrontWafStack をデプロイする
-  // WAF v2 は us-east-1 でのみデプロイ可能なため、Stack を分けている
+  // Only deploy CloudFrontWafStack if IP address range (v4 or v6) or geographic restriction is defined
+  // WAF v2 is only deployable in us-east-1, so the Stack is separated
   const cloudFrontWafStack =
     params.allowedIpV4AddressRanges ||
     params.allowedIpV6AddressRanges ||
@@ -52,6 +52,13 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
       : null;
 
   // Agent
+  if (params.crossAccountBedrockRoleArn) {
+    if (params.agentEnabled || params.searchApiKey) {
+      throw new Error(
+        'When `crossAccountBedrockRoleArn` is specified, the `agentEnabled` and `searchApiKey` parameters are not supported. Please create agents in the other account and specify them in the `agents` parameter.'
+      );
+    }
+  }
   const agentStack = params.agentEnabled
     ? new AgentStack(app, `WebSearchAgentStack${params.env}`, {
         env: {
@@ -74,12 +81,11 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
       })
     : null;
 
-  // Video 生成時に StartAsyncInvoke で指定する S3 Bucket は
-  // Bedrock Runtime と同じリージョンにないとエラーになるため
-  // videoGenerationModelIds に定義されたユニークなリージョンごとに Bucket を作成する
-  const videoModelRegions = params.videoGenerationModelIds
-    .map((model) => model.region)
-    .filter((elem, index, self) => self.indexOf(elem) === index);
+  // Create S3 Bucket for each unique region for StartAsyncInvoke in video generation
+  // because the S3 Bucket must be in the same region as Bedrock Runtime
+  const videoModelRegions = [
+    ...new Set(params.videoGenerationModelIds.map((model) => model.region)),
+  ];
   const videoBucketRegionMap: Record<string, string> = {};
 
   for (const region of videoModelRegions) {
@@ -91,6 +97,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
           account: params.account,
           region,
         },
+        params,
       }
     );
 
@@ -107,7 +114,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
         region: params.region,
       },
       description: params.anonymousUsageTracking
-        ? 'Generative AI Use Cases JP (uksb-1tupboc48)'
+        ? 'Generative AI Use Cases (uksb-1tupboc48)'
         : undefined,
       params: params,
       crossRegionReferences: true,
