@@ -4,21 +4,23 @@ import useChatList from '../hooks/useChatList';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatListItem from './ChatListItem';
 import { decomposeId } from '../utils/ChatUtils';
+import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
   searchWords: string[];
 };
 
 const ChatList: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const { chats, loading, deleteChat, updateChatTitle, canLoadMore, loadMore } =
     useChatList();
   const { chatId } = useParams();
   const navigate = useNavigate();
 
   const onDelete = useCallback(
-    (_chatId: string) => {
+    async (_chatId: string) => {
       navigate('/chat');
-      return deleteChat(_chatId).catch(() => {
+      return await deleteChat(_chatId).catch(() => {
         navigate(`/chat/${_chatId}`);
       });
     },
@@ -37,7 +39,7 @@ const ChatList: React.FC<Props> = (props) => {
       return chats;
     }
 
-    // OR 検索にしています
+    // OR search
     return chats.filter((c) => {
       return props.searchWords.some((w) =>
         c.title.toLowerCase().includes(w.toLowerCase())
@@ -72,7 +74,7 @@ const ChatList: React.FC<Props> = (props) => {
               onClick={() => {
                 loadMore();
               }}>
-              さらに読み込む
+              {t('common.load_more')}
             </button>
           </div>
         )}

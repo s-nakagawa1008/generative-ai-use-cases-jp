@@ -25,6 +25,7 @@ export const stackInputSchema = z.object({
       video: z.boolean().optional(),
       videoAnalyzer: z.boolean().optional(),
       diagram: z.boolean().optional(),
+      speechToSpeech: z.boolean().optional(),
     })
     .default({}),
   // API
@@ -40,11 +41,13 @@ export const stackInputSchema = z.object({
       ])
     )
     .default([
-      'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
+      'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
       'us.anthropic.claude-3-5-haiku-20241022-v1:0',
+      'us.amazon.nova-premier-v1:0',
       'us.amazon.nova-pro-v1:0',
       'us.amazon.nova-lite-v1:0',
       'us.amazon.nova-micro-v1:0',
+      'us.deepseek.r1-v1:0',
     ]),
   imageGenerationModelIds: z
     .array(
@@ -68,10 +71,22 @@ export const stackInputSchema = z.object({
       ])
     )
     .default(['amazon.nova-reel-v1:0']),
+  speechToSpeechModelIds: z
+    .array(
+      z.union([
+        z.string(),
+        z.object({
+          modelId: z.string(),
+          region: z.string(),
+        }),
+      ])
+    )
+    .default(['amazon.nova-sonic-v1:0']),
   endpointNames: z.array(z.string()).default([]),
   crossAccountBedrockRoleArn: z.string().nullish(),
   // RAG
   ragEnabled: z.boolean().default(false),
+  kendraIndexLanguage: z.string().default('ja'),
   kendraIndexArn: z.string().nullish(),
   kendraDataSourceBucketName: z.string().nullish(),
   kendraIndexScheduleEnabled: z.boolean().default(false),
@@ -144,7 +159,7 @@ export const stackInputSchema = z.object({
   dashboard: z.boolean().default(false),
 });
 
-// 変換後用のschema
+// schema after conversion
 export const processedStackInputSchema = stackInputSchema.extend({
   modelIds: z.array(
     z.object({
@@ -159,6 +174,12 @@ export const processedStackInputSchema = stackInputSchema.extend({
     })
   ),
   videoGenerationModelIds: z.array(
+    z.object({
+      modelId: z.string(),
+      region: z.string(),
+    })
+  ),
+  speechToSpeechModelIds: z.array(
     z.object({
       modelId: z.string(),
       region: z.string(),

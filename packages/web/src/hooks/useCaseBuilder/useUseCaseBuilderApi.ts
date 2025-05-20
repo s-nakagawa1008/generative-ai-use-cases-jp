@@ -1,6 +1,6 @@
 import {
   CreateUseCaseRequest,
-  CreateUseCaseRespose,
+  CreateUseCaseResponse,
   GetUseCaseResponse,
   ListFavoriteUseCasesResponse,
   ListRecentlyUsedUseCasesResponse,
@@ -8,7 +8,7 @@ import {
   ToggleFavoriteResponse,
   ToggleShareResponse,
   UpdateUseCaseRequest,
-} from 'generative-ai-use-cases-jp';
+} from 'generative-ai-use-cases';
 import useHttp from '../useHttp';
 import { AxiosError } from 'axios';
 
@@ -62,7 +62,7 @@ const useUseCaseBuilderApi = () => {
     },
     createUseCase: async (params: CreateUseCaseRequest) => {
       return http
-        .post<CreateUseCaseRespose, CreateUseCaseRequest>('/usecases', params)
+        .post<CreateUseCaseResponse, CreateUseCaseRequest>('/usecases', params)
         .then((res) => {
           return res.data;
         });

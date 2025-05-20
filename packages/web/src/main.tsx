@@ -1,3 +1,4 @@
+import './i18n/config';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AuthWithUserpool from './components/AuthWithUserpool';
@@ -26,6 +27,7 @@ import OptimizePromptPage from './pages/OptimizePromptPage';
 import TranscribePage from './pages/TranscribePage';
 import AgentChatPage from './pages/AgentChatPage.tsx';
 import FlowChatPage from './pages/FlowChatPage';
+import VoiceChatPage from './pages/VoiceChatPage';
 import { MODELS } from './hooks/useModel';
 import { Authenticator } from '@aws-amplify/ui-react';
 import UseCaseBuilderEditPage from './pages/useCaseBuilder/UseCaseBuilderEditPage.tsx';
@@ -47,7 +49,12 @@ const samlAuthEnabled: boolean =
   import.meta.env.VITE_APP_SAMLAUTH_ENABLED === 'true';
 const agentEnabled: boolean = import.meta.env.VITE_APP_AGENT_ENABLED === 'true';
 const inlineAgents: boolean = import.meta.env.VITE_APP_INLINE_AGENTS === 'true';
-const { visionEnabled, imageGenModelIds, videoGenModelIds } = MODELS;
+const {
+  visionEnabled,
+  imageGenModelIds,
+  videoGenModelIds,
+  speechToSpeechModelIds,
+} = MODELS;
 const useCaseBuilderEnabled: boolean =
   import.meta.env.VITE_APP_USE_CASE_BUILDER_ENABLED === 'true';
 // eslint-disable-next-line  react-hooks/rules-of-hooks
@@ -166,6 +173,12 @@ const routes: RouteObject[] = [
         element: <AgentChatPage />,
       }
     : null,
+  speechToSpeechModelIds.length > 0 && enabled('voiceChat')
+    ? {
+        path: '/voice-chat',
+        element: <VoiceChatPage />,
+      }
+    : null,
   {
     path: '*',
     element: <NotFound />,
@@ -238,9 +251,12 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Authenticator.Provider>
-      <RouterProvider router={router} />
-      <Toaster />
-    </Authenticator.Provider>
+    {/* eslint-disable-next-line @shopify/jsx-no-hardcoded-content */}
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <Authenticator.Provider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </Authenticator.Provider>
+    </React.Suspense>
   </React.StrictMode>
 );

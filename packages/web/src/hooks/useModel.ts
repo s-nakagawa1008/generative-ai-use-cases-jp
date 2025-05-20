@@ -1,9 +1,9 @@
-import { Model, ModelConfiguration } from 'generative-ai-use-cases-jp';
-import { modelFeatureFlags } from '@generative-ai-use-cases-jp/common';
+import { Model, ModelConfiguration } from 'generative-ai-use-cases';
+import { modelFeatureFlags } from '@generative-ai-use-cases/common';
 
 const modelRegion = import.meta.env.VITE_APP_MODEL_REGION;
 
-// 環境変数からモデル名などを取得
+// Get model names and other environment variables
 const bedrockModelConfigs = (
   JSON.parse(import.meta.env.VITE_APP_MODEL_IDS) as ModelConfiguration[]
 )
@@ -57,6 +57,21 @@ const videoModelConfigs = (
 const videoGenModelIds: string[] = videoModelConfigs.map(
   (model) => model.modelId
 );
+const speechToSpeechModelConfigs = (
+  JSON.parse(
+    import.meta.env.VITE_APP_SPEECH_TO_SPEECH_MODEL_IDS
+  ) as ModelConfiguration[]
+)
+  .map(
+    (model: ModelConfiguration): ModelConfiguration => ({
+      modelId: model.modelId.trim(),
+      region: model.region.trim(),
+    })
+  )
+  .filter((model) => model.modelId);
+const speechToSpeechModelIds: string[] = speechToSpeechModelConfigs.map(
+  (model) => model.modelId
+);
 
 const agentNames: string[] = JSON.parse(import.meta.env.VITE_APP_AGENT_NAMES)
   .map((name: string) => name.trim())
@@ -72,7 +87,7 @@ const getFlows = () => {
 
 const flows = getFlows();
 
-// モデルオブジェクトの定義
+// Define model objects
 const textModels = [
   ...bedrockModelConfigs.map(
     (model) =>
@@ -98,6 +113,16 @@ const imageGenModels = [
 ];
 const videoGenModels = [
   ...videoModelConfigs.map(
+    (model) =>
+      ({
+        modelId: model.modelId,
+        type: 'bedrock',
+        region: model.region,
+      }) as Model
+  ),
+];
+const speechToSpeechModels = [
+  ...speechToSpeechModelConfigs.map(
     (model) =>
       ({
         modelId: model.modelId,
@@ -148,4 +173,6 @@ export const MODELS = {
   searchAgent: searchAgent,
   flows,
   flowChatEnabled: flows.length > 0,
+  speechToSpeechModelIds: speechToSpeechModelIds,
+  speechToSpeechModels: speechToSpeechModels,
 };
