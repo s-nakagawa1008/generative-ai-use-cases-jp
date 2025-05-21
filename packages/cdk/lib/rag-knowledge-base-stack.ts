@@ -165,7 +165,7 @@ export class RagKnowledgeBaseStack extends Stack {
     }
 
     const collectionName =
-      props.collectionName ?? `generative-ai-use-cases-jp${env.toLowerCase()}`;
+      props.collectionName ?? `genu-nakagawa1008${env.toLowerCase()}`;
     const vectorIndexName =
       props.vectorIndexName ?? 'bedrock-knowledge-base-default';
     const vectorField =

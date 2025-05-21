@@ -193,7 +193,7 @@ export class Rag extends Construct {
 
       let index: kendra.CfnIndex;
       const indexProps: kendra.CfnIndexProps = {
-        name: `generative-ai-use-cases-index${envSuffix}`,
+        name: `genu-nakagawa1008-index${envSuffix}`,
         edition: 'DEVELOPER_EDITION',
         roleArn: indexRole.roleArn,
 

@@ -41,7 +41,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   // RAG Knowledge Base
   const ragKnowledgeBaseStack =
     params.ragKnowledgeBaseEnabled && !params.ragKnowledgeBaseId
-      ? new RagKnowledgeBaseStack(app, `RagKnowledgeBaseStack-nakagawa1008${params.env}`, {
+      ? new RagKnowledgeBaseStack(app, `RagKnwledgeBsStack-nakagawa1008${params.env}`, {
           env: {
             account: params.account,
             region: params.modelRegion,
@@ -60,7 +60,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
     }
   }
   const agentStack = params.agentEnabled
-    ? new AgentStack(app, `WebSearchAgentStack-nakagawa1008${params.env}`, {
+    ? new AgentStack(app, `WebSrchAgntStack-nakagawa1008${params.env}`, {
         env: {
           account: params.account,
           region: params.modelRegion,
@@ -91,7 +91,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   for (const region of videoModelRegions) {
     const videoTmpBucketStack = new VideoTmpBucketStack(
       app,
-      `VideoTmpBucketStack${params.env}-nakagawa1008${region}`,
+      `VideoTmpBcktStack${params.env}-nakagawa1008${region}`,
       {
         env: {
           account: params.account,
@@ -107,7 +107,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   // GenU Stack
   const generativeAiUseCasesStack = new GenerativeAiUseCasesStack(
     app,
-    `GenerativeAiUseCasesStack-nakagawa1008${params.env}`,
+    `GenUsCasesStack-nakagawa1008${params.env}`,
     {
       env: {
         account: params.account,
@@ -143,7 +143,7 @@ export const createStacks = (app: cdk.App, params: ProcessedStackInput) => {
   const dashboardStack = params.dashboard
     ? new DashboardStack(
         app,
-        `GenerativeAiUseCasesDashboardStack-nakagawa1008${params.env}`,
+        `GenUDashboardStack-nakagawa1008${params.env}`,
         {
           env: {
             account: params.account,
