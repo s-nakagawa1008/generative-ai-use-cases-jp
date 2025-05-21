@@ -128,12 +128,12 @@ exports[`GenerativeAiUseCases matches the snapshot 2`] = `
   "Resources": {
     "AccessPolicy": {
       "Properties": {
-        "Name": "generative-ai-use-cases-jp",
+        "Name": "GenU-nakagawa1008",
         "Policy": {
           "Fn::Join": [
             "",
             [
-              "[{"Rules":[{"Resource":["collection/generative-ai-use-cases-jp"],"Permission":["aoss:DescribeCollectionItems","aoss:CreateCollectionItems","aoss:UpdateCollectionItems"],"ResourceType":"collection"},{"Resource":["index/generative-ai-use-cases-jp/*"],"Permission":["aoss:UpdateIndex","aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument","aoss:CreateIndex","aoss:DeleteIndex"],"ResourceType":"index"}],"Principal":["",
+              "[{"Rules":[{"Resource":["collection/GenU-nakagawa1008"],"Permission":["aoss:DescribeCollectionItems","aoss:CreateCollectionItems","aoss:UpdateCollectionItems"],"ResourceType":"collection"},{"Resource":["index/GenU-nakagawa1008/*"],"Permission":["aoss:UpdateIndex","aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument","aoss:CreateIndex","aoss:DeleteIndex"],"ResourceType":"index"}],"Principal":["",
               {
                 "Fn::GetAtt": [
                   "KnowledgeBaseRoleA2B317B9",
@@ -163,7 +163,7 @@ exports[`GenerativeAiUseCases matches the snapshot 2`] = `
       ],
       "Properties": {
         "Description": "GenU Collection",
-        "Name": "generative-ai-use-cases-jp",
+        "Name": "GenU-nakagawa1008",
         "StandbyReplicas": "DISABLED",
         "Type": "VECTORSEARCH",
       },
@@ -736,8 +736,8 @@ exports[`GenerativeAiUseCases matches the snapshot 2`] = `
     },
     "EncryptionPolicy": {
       "Properties": {
-        "Name": "generative-ai-use-cases-jp",
-        "Policy": "{"Rules":[{"Resource":["collection/generative-ai-use-cases-jp"],"ResourceType":"collection"}],"AWSOwnedKey":true}",
+        "Name": "GenU-nakagawa1008",
+        "Policy": "{"Rules":[{"Resource":["collection/GenU-nakagawa1008"],"ResourceType":"collection"}],"AWSOwnedKey":true}",
         "Type": "encryption",
       },
       "Type": "AWS::OpenSearchServerless::SecurityPolicy",
@@ -754,7 +754,7 @@ exports[`GenerativeAiUseCases matches the snapshot 2`] = `
             "EmbeddingModelArn": "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0",
           },
         },
-        "Name": "generative-ai-use-cases-jp",
+        "Name": "GenU-nakagawa1008",
         "RoleArn": {
           "Fn::GetAtt": [
             "KnowledgeBaseRoleA2B317B9",
@@ -862,8 +862,8 @@ exports[`GenerativeAiUseCases matches the snapshot 2`] = `
     },
     "NetworkPolicy": {
       "Properties": {
-        "Name": "generative-ai-use-cases-jp",
-        "Policy": "[{"Rules":[{"Resource":["collection/generative-ai-use-cases-jp"],"ResourceType":"collection"},{"Resource":["collection/generative-ai-use-cases-jp"],"ResourceType":"dashboard"}],"AllowFromPublic":true}]",
+        "Name": "GenU-nakagawa1008",
+        "Policy": "[{"Rules":[{"Resource":["collection/GenU-nakagawa1008"],"ResourceType":"collection"},{"Resource":["collection/GenU-nakagawa1008"],"ResourceType":"dashboard"}],"AllowFromPublic":true}]",
         "Type": "network",
       },
       "Type": "AWS::OpenSearchServerless::SecurityPolicy",

@@ -24,7 +24,7 @@
     "kendraIndexScheduleCreateCron": null,
     "kendraIndexScheduleDeleteCron": null,
     "ragKnowledgeBaseEnabled": true,
-    "ragKnowledgeBaseId": "ARJ9K1KHOG",
+    "ragKnowledgeBaseId": "E9ZKDYYW6A",
     "ragKnowledgeBaseStandbyReplicas": false,
     "ragKnowledgeBaseAdvancedParsing": false,
     "ragKnowledgeBaseAdvancedParsingModelId": "anthropic.claude-3-sonnet-20240229-v1:0",
