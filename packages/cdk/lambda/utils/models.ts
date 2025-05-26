@@ -25,11 +25,12 @@ import {
   ConversationRole,
   ContentBlock,
 } from '@aws-sdk/client-bedrock-runtime';
-import { modelFeatureFlags } from '@generative-ai-use-cases/common';
+import { modelMetadata } from '@generative-ai-use-cases/common';
 import {
   applyAutoCacheToMessages,
   applyAutoCacheToSystem,
 } from './promptCache';
+import { getFormatFromMimeType } from './media';
 
 // Default Models
 
@@ -43,7 +44,7 @@ const modelIds: ModelConfiguration[] = (
   .filter((model) => model.modelId);
 // If there is a lightweight model among the available models, prioritize the lightweight model.
 const lightWeightModelIds = modelIds.filter(
-  (model: ModelConfiguration) => modelFeatureFlags[model.modelId].light
+  (model: ModelConfiguration) => modelMetadata[model.modelId].flags.light
 );
 const defaultModelConfiguration = lightWeightModelIds[0] || modelIds[0];
 export const defaultModel: Model = {
@@ -190,6 +191,13 @@ const NOVA_DEFAULT_PARAMS: ConverseInferenceParams = {
     temperature: 0.7,
     topP: 0.9,
   },
+  // There are no additional costs for cache writes with Amazon Nova models
+  promptCachingConfig: {
+    autoCacheFields: {
+      system: true,
+      messages: true,
+    },
+  },
 };
 
 const DEEPSEEK_DEFAULT_PARAMS: ConverseInferenceParams = {
@@ -211,17 +219,42 @@ const PALMYRA_DEFAULT_PARAMS: ConverseInferenceParams = {
 const USECASE_DEFAULT_PARAMS: UsecaseConverseInferenceParams = {
   '/chat': {
     promptCachingConfig: {
-      autoCacheFields: ['system', 'messages'],
+      autoCacheFields: {
+        system: true,
+        messages: true,
+      },
     },
   },
   '/rag': {
     inferenceConfig: {
       temperature: 0.0,
     },
+    promptCachingConfig: {
+      autoCacheFields: {
+        system: false,
+      },
+    },
   },
   '/diagram': {
     promptCachingConfig: {
-      autoCacheFields: ['system'],
+      autoCacheFields: {
+        system: true,
+      },
+    },
+  },
+  '/use-case-builder': {
+    promptCachingConfig: {
+      autoCacheFields: {
+        messages: false,
+      },
+    },
+  },
+  '/title': {
+    promptCachingConfig: {
+      autoCacheFields: {
+        system: false,
+        messages: false,
+      },
     },
   },
 };
@@ -263,6 +296,11 @@ const createGuardrailStreamConfig = ():
 const idTransformationRules = [
   // Chat history -> Chat
   { pattern: /^\/chat\/.+/, replacement: '/chat' },
+  // Use case builder (/new and /execute/*)
+  {
+    pattern: /^\/use-case-builder\/.+/,
+    replacement: '/use-case-builder',
+  },
 ];
 
 // ID conversion
@@ -272,6 +310,23 @@ function normalizeId(id: string): string {
   const ret = rule ? rule.replacement : id;
   return ret;
 }
+
+const mergeConverseInferenceParams = (
+  a: ConverseInferenceParams,
+  b: ConverseInferenceParams
+) =>
+  ({
+    inferenceConfig: {
+      ...a.inferenceConfig,
+      ...b.inferenceConfig,
+    },
+    promptCachingConfig: {
+      autoCacheFields: {
+        ...a.promptCachingConfig?.autoCacheFields,
+        ...b.promptCachingConfig?.autoCacheFields,
+      },
+    },
+  }) as ConverseInferenceParams;
 
 // API call, extract string from output, etc.
 
@@ -289,16 +344,15 @@ const createConverseCommandInput = (
   // Add the string of user role and assistant role other than the system role to the conversation
   messages = messages.filter((message) => message.role !== 'system');
   const conversation = messages.map((message) => {
-    const contentBlocks: ContentBlock[] = [
-      { text: message.content } as ContentBlock.TextMember,
-    ];
+    const contentBlocks: ContentBlock[] = [];
 
+    // Put images, videos, and documents before the task, instruction, and user query
     if (message.extraData) {
       message.extraData.forEach((extra) => {
         if (extra.type === 'image' && extra.source.type === 'base64') {
           contentBlocks.push({
             image: {
-              format: extra.source.mediaType.split('/')[1],
+              format: getFormatFromMimeType(extra.source.mediaType),
               source: {
                 bytes: Buffer.from(extra.source.data, 'base64'),
               },
@@ -307,7 +361,7 @@ const createConverseCommandInput = (
         } else if (extra.type === 'file' && extra.source.type === 'base64') {
           contentBlocks.push({
             document: {
-              format: extra.name.split('.').pop(),
+              format: getFormatFromMimeType(extra.source.mediaType),
               name: extra.name
                 .split('.')[0]
                 .replace(/[^a-zA-Z0-9\s\-()[\]]/g, 'X'), // If the file name contains Japanese, it will cause an error, so convert it
@@ -319,7 +373,7 @@ const createConverseCommandInput = (
         } else if (extra.type === 'video' && extra.source.type === 'base64') {
           contentBlocks.push({
             video: {
-              format: extra.source.mediaType.split('/')[1],
+              format: getFormatFromMimeType(extra.source.mediaType),
               source: {
                 bytes: Buffer.from(extra.source.data, 'base64'),
               },
@@ -328,7 +382,7 @@ const createConverseCommandInput = (
         } else if (extra.type === 'video' && extra.source.type === 's3') {
           contentBlocks.push({
             video: {
-              format: extra.source.mediaType.split('/')[1],
+              format: getFormatFromMimeType(extra.source.mediaType),
               source: {
                 s3Location: {
                   uri: extra.source.data,
@@ -340,6 +394,7 @@ const createConverseCommandInput = (
       });
     }
 
+    contentBlocks.push({ text: message.content });
     return {
       role:
         message.role === 'user'
@@ -351,14 +406,17 @@ const createConverseCommandInput = (
 
   // Merge model's default params with use-case specific ones
   const usecaseParams = usecaseConverseInferenceParams[normalizeId(id)] || {};
-  const params = { ...defaultConverseInferenceParams, ...usecaseParams };
+  const params = mergeConverseInferenceParams(
+    defaultConverseInferenceParams,
+    usecaseParams
+  );
 
   // Apply prompt caching
-  const autoCacheFields = params.promptCachingConfig?.autoCacheFields || [];
-  const conversationWithCache = autoCacheFields.includes('messages')
+  const autoCacheFields = params.promptCachingConfig?.autoCacheFields || {};
+  const conversationWithCache = autoCacheFields['messages']
     ? applyAutoCacheToMessages(conversation, model.modelId)
     : conversation;
-  const systemContextWithCache = autoCacheFields.includes('system')
+  const systemContextWithCache = autoCacheFields['system']
     ? applyAutoCacheToSystem(systemContext, model.modelId)
     : systemContext;
 
@@ -373,11 +431,11 @@ const createConverseCommandInput = (
   };
 
   if (
-    modelFeatureFlags[model.modelId].reasoning &&
+    modelMetadata[model.modelId].flags.reasoning &&
     model.modelParameters?.reasoningConfig?.type === 'enabled'
   ) {
     converseCommandInput.inferenceConfig = {
-      ...(params.inferenceConfig || {}),
+      ...params.inferenceConfig,
       temperature: 1, // reasoning requires temperature to be 1
       topP: undefined, // reasoning does not require topP
       maxTokens:
@@ -828,6 +886,38 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: (body: ConverseStreamOutput) => StreamingChunk;
   };
 } = {
+  'us.anthropic.claude-opus-4-20250514-v1:0': {
+    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'us.anthropic.claude-sonnet-4-20250514-v1:0': {
+    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'eu.anthropic.claude-sonnet-4-20250514-v1:0': {
+    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'apac.anthropic.claude-sonnet-4-20250514-v1:0': {
+    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
   'anthropic.claude-3-5-sonnet-20241022-v2:0': {
     defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
@@ -861,6 +951,22 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'us.anthropic.claude-3-7-sonnet-20250219-v1:0': {
+    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'eu.anthropic.claude-3-7-sonnet-20250219-v1:0': {
+    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'apac.anthropic.claude-3-7-sonnet-20250219-v1:0': {
     defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,

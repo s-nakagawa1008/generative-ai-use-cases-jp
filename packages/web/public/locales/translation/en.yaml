@@ -32,6 +32,7 @@ chat:
   show_system_prompt: Show system prompt
   system_prompt: System Prompt
   title: Chat
+  view_prompt_examples: View Prompt Examples
 common:
   cancel: Cancel
   clear: Clear
@@ -594,7 +595,7 @@ landing:
       title: Web Content Extraction
     writer:
       description: >-
-        LLMs trained in multiple languages can perform translation. Moreover, not only can they translate, but they can also reflect various specified context information such as casualness and target audience in the translation.
+        A tool for writing assistance, text refinement, and proofreading. You can write efficiently with AI assistance.
       title: Writing
   use_cases_integration:
     blog:
@@ -614,6 +615,7 @@ language:
   fr: French
   ja: Japanese
   ko: Korean
+  th: Thai
   zh: Chinese
 model:
   parameters:
@@ -1190,8 +1192,7 @@ writer:
     yellow: Yellow
   dark: Dark
   description: >-
-    A tool for writing assistance, text refinement, and proofreading. You can
-    write efficiently with AI assistance.
+    A tool for writing assistance, text refinement, and proofreading. You can write efficiently with AI assistance.
   example1: 'For example, you can have the AI continue this paragraph:'
   example2: >-
     You can also check facts in your text. Select the following text and choose

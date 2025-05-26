@@ -37,7 +37,7 @@ export const applyAutoCacheToMessages = (
       ({ message }) =>
         isToolsSupported ||
         // For Amazon Nova, placing cachePoint after toolResult is not supported
-        !message.content?.some((content) => content.toolResult)
+        !message.content?.some((block) => block.toolResult)
     )
     .slice(-2)
     .map(({ index }) => index);

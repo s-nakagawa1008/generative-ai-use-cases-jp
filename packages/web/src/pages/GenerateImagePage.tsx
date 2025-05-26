@@ -565,7 +565,8 @@ const GenerateImagePage: React.FC = () => {
   const [previousImageSample, setPreviousImageSample] = useState(3);
   const [previousGenerationMode, setPreviousGenerationMode] =
     useState<AmazonUIImageGenerationMode>('TEXT_IMAGE');
-  const { modelIds, imageGenModelIds, imageGenModels } = MODELS;
+  const { modelIds, imageGenModelIds, imageGenModels, modelDisplayName } =
+    MODELS;
   const modelId = getModelId();
   const prompter = useMemo(() => {
     return getPrompter(modelId);
@@ -865,6 +866,10 @@ const GenerateImagePage: React.FC = () => {
     clearChat();
   }, [clear, clearChat]);
 
+  const downloadFileName = useMemo(() => {
+    return prompt.toLowerCase().replace(/ /g, '-').replace(/,/g, '_');
+  }, [prompt]);
+
   return (
     <div className="grid h-screen grid-cols-12 gap-4 p-4">
       <ModalDialog
@@ -942,6 +947,7 @@ const GenerateImagePage: React.FC = () => {
               loading={generating}
               error={image[selectedImageIndex].error}
               errorMessage={image[selectedImageIndex].errorMessage}
+              downloadFileName={downloadFileName}
             />
           </div>
 
@@ -1002,7 +1008,7 @@ const GenerateImagePage: React.FC = () => {
               value={imageGenModelId}
               onChange={setImageGenModelId}
               options={imageGenModelIds.map((m) => {
-                return { value: m, label: m };
+                return { value: m, label: modelDisplayName(m) };
               })}
               fullWidth
             />
